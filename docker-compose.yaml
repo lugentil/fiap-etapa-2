@@ -1,0 +1,106 @@
+name: toggle-master
+services:
+
+  db_auth-service:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - 5432:5432
+    volumes:
+      - ./auth-service/db:/docker-entrypoint-initdb.d
+      - postgres_auth_data:/var/lib/postgresql
+    networks:
+      - database
+    
+    environment:
+      POSTGRES_PASSWORD: ${AUTH_SERVICE_POSTGRES_PASSWORD}
+
+  auth_service:
+    image: auth-server-teste:2
+    restart: always
+    ports: 
+      - 8001:8001
+    networks:
+      - database
+      - backend
+    environment:
+      DATABASE_URL: ${AUTH_SERVICE_DATABASE_URL}
+      PORT: ${AUTH_SERVICE_PORT}
+      MASTER_KEY: ${AUTH_SERVICE_MASTER_KEY}
+    depends_on:
+      db_auth-service:
+        condition: service_started
+
+  db_flags-service:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - 5433:5433
+    volumes:
+      - ./flag-service/db:/docker-entrypoint-initdb.d
+      - postgres_flag_data:/var/lib/postgresql
+    networks:
+      - database
+
+    environment:
+      POSTGRES_PASSWORD: ${FLAG_SERVICE_POSTGRES_PASSWORD}
+
+  flags_service:
+    image: flags_db:1
+    restart: always
+    ports: 
+      - 8002:8002
+    networks:
+      - database
+      - backend
+    environment:
+      DATABASE_URL: ${FLAG_SERVICE_DATABASE_URL}
+      PORT: ${FLAG_SERVICE_PORT}
+      AUTH_SERVICE_URL: ${FLAG_SERVICE_AUTH_SERVICE_URL}
+    depends_on:
+      db_flags-service:
+        condition: service_started
+
+  db_targeting-service:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - 5434:5434
+    volumes:
+      - ./targeting-service/db:/docker-entrypoint-initdb.d
+      - postgres_targeting_data:/var/lib/postgresql
+    networks:
+      - database
+
+    environment:
+      POSTGRES_PASSWORD: ${TARGETING_SERVICE_POSTGRES_PASSWORD}
+
+  targeting_service:
+    image: targeting_service:2.0
+    restart: always
+    ports: 
+      - 8003:8003
+    networks:
+      - database
+      - backend
+    environment:
+      DATABASE_URL: ${TARGETING_SERVICE_DATABASE_URL}
+      PORT: ${TARGETING_SERVICE_PORT}
+      AUTH_SERVICE_URL: ${TARGETING_SERVICE_AUTH_SERVICE_URL}
+    depends_on:
+      db_targeting-service:
+        condition: service_started
+
+volumes:
+  postgres_auth_data:
+  postgres_flag_data:
+  postgres_targeting_data:
+
+networks:
+  database:
+    driver: bridge
+  backend:
+    driver: bridge
