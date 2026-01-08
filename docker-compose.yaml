@@ -94,7 +94,60 @@ services:
       db_targeting-service:
         condition: service_started
 
+  db_redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    networks:
+      - database
+
+  evaluation-service:
+    image: evaluation-service:1.0
+    restart: always
+    ports: 
+      - 8004:8004
+    networks:
+      - database
+      - backend
+    environment:
+      REDIS_URL: ${EVALUATION_SERVICE_REDIS_URL}
+      PORT: ${EVALUATION_SERVICE_PORT}
+      FLAG_SERVICE_URL: ${EVALUATION_SERVICE_FLAG_SERVICE_URL}
+      TARGETING_SERVICE_URL: ${EVALUATION_SERVICE_TARGETING_SERVICE_URL}
+      SERVICE_API_KEY: ${EVALUATION_SERVICE_SERVICE_API_KEY}
+      AWS_SQS_URL: ${EVALUATION_SERVICE_AWS_SQS_URL}
+      AWS_REGION: ${EVALUATION_SERVICE_AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    depends_on:
+      db_redis:
+        condition: service_started
+
+  analytics_service:
+    image: analytics_service:1.0
+    restart: always
+    ports: 
+      - 8005:8005
+    networks:
+      - database
+      - backend
+    environment:
+      PORT: ${ANALYTICS_PORT}
+      AWS_SQS_URL: ${ANALYTICS_AWS_SQS_URL}
+      AWS_DYNAMODB_TABLE: ${ANALYTICS_AWS_DYNAMODB_TABLE}
+      AWS_REGION: ${ANALYTICS_AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_REGION: ${AWS_REGION}
+    depends_on:
+      db_targeting-service:
+        condition: service_started
+
 volumes:
+  dynamodb:
   postgres_auth_data:
   postgres_flag_data:
   postgres_targeting_data:
