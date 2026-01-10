@@ -4,14 +4,10 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build .
+RUN CGO_ENABLED=0 GOOS=linux go build .
 
-RUN go mod tidy
+FROM alpine:3.23.2
 
-ENV DATABASE_URL="postgres://postgres:teste123@postgresql-db-1:5432/auth_db"
+COPY --from=builder /app/auth-service /usr/local/bin/auth-service
 
-ENV PORT="8001"
-
-ENV MASTER_KEY="admin-secreto-123"
-
-CMD ["go", "run", "."]
+CMD ["auth-service"]

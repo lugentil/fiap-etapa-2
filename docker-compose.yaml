@@ -17,7 +17,7 @@ services:
       POSTGRES_PASSWORD: ${AUTH_SERVICE_POSTGRES_PASSWORD}
 
   auth_service:
-    image: auth-server-teste:2
+    image: auth-service:3.0
     restart: always
     ports: 
       - 8001:8001
@@ -103,7 +103,7 @@ services:
       - database
 
   evaluation-service:
-    image: evaluation-service:1.0
+    image: evaluation-service:2.0
     restart: always
     ports: 
       - 8004:8004
@@ -117,7 +117,7 @@ services:
       TARGETING_SERVICE_URL: ${EVALUATION_SERVICE_TARGETING_SERVICE_URL}
       SERVICE_API_KEY: ${EVALUATION_SERVICE_SERVICE_API_KEY}
       AWS_SQS_URL: ${EVALUATION_SERVICE_AWS_SQS_URL}
-      AWS_REGION: ${EVALUATION_SERVICE_AWS_REGION}
+      AWS_REGION: ${AWS_REGION}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
@@ -126,7 +126,7 @@ services:
         condition: service_started
 
   analytics_service:
-    image: analytics_service:1.0
+    image: analytics-service:2.0
     restart: always
     ports: 
       - 8005:8005
@@ -137,11 +137,10 @@ services:
       PORT: ${ANALYTICS_PORT}
       AWS_SQS_URL: ${ANALYTICS_AWS_SQS_URL}
       AWS_DYNAMODB_TABLE: ${ANALYTICS_AWS_DYNAMODB_TABLE}
-      AWS_REGION: ${ANALYTICS_AWS_REGION}
+      AWS_REGION: ${AWS_REGION}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
-      AWS_REGION: ${AWS_REGION}
     depends_on:
       db_targeting-service:
         condition: service_started

@@ -4,8 +4,10 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build .
+RUN CGO_ENABLED=0 GOOS=linux go build .
 
-RUN go mod tidy
+FROM alpine:3.23.2
 
-CMD ["go", "run", "."]
+COPY --from=builder /app/evaluation-service /usr/local/bin/evaluation-service
+
+CMD ["evaluation-service"]
