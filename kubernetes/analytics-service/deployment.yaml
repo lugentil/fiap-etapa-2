@@ -29,6 +29,8 @@ spec:
           envFrom:
             - secretRef:
                 name: analytics-service-secrets
+            - secretRef:
+                name: aws-credentials
           resources:
             requests:
               memory: "128Mi"
