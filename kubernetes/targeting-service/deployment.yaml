@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: targeting-service
+  namespace: targeting-service
+  labels:
+    app: targeting-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: targeting-service
+  template:
+    metadata:
+      labels:
+        app: targeting-service
+        tier: backend
+    spec:
+      imagePullSecrets:
+      - name: ecr-secret
+      containers:
+        - name: targeting-service
+          image: 901918119201.dkr.ecr.us-east-1.amazonaws.com/tech-challenge/targeting-service:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8003
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: targeting-service-secrets
+                  key: TARGETING_SERVICE_DATABASE_URL
+            - name: PORT
+              valueFrom:
+                secretKeyRef:
+                  name: targeting-service-secrets
+                  key: TARGETING_SERVICE_PORT
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: targeting-service-secrets
+                  key: TARGETING_SERVICE_AUTH_SERVICE_URL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3

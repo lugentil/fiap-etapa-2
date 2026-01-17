@@ -1,0 +1,11 @@
+helm install nginx ingress-nginx/ingress-nginx \
+  --namespace nginx \
+  --set controller.service.type=LoadBalancer \
+  --set-string controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"="nlb" \
+  --set-string controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-cross-zone-load-balancing-enabled"="true" \
+  --set-string controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-subnets"="subnet-03c66670b6a7bd429\,subnet-0dd73d432d8ad364f" \
+  --set-string controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-scheme"="internet-facing" \
+  --set-string controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-backend-protocol"="tcp" \
+  --set controller.metrics.enabled=true \
+  --set-string controller.metrics.service.annotations."prometheus\.io/port"="10254" \
+  --set-string controller.metrics.service.annotations."prometheus\.io/scrape"="true"

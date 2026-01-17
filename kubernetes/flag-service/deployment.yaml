@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flag-service
+  namespace: flag-service
+  labels:
+    app: flag-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flag-service
+  template:
+    metadata:
+      labels:
+        app: flag-service
+        tier: backend
+    spec:
+      imagePullSecrets:
+      - name: ecr-secret
+      containers:
+        - name: flag-service
+          image: 901918119201.dkr.ecr.us-east-1.amazonaws.com/tech-challenge/flag-service:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8002
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: flag-service-secrets
+                  key: FLAG_SERVICE_DATABASE_URL
+            - name: PORT
+              valueFrom:
+                secretKeyRef:
+                  name: flag-service-secrets
+                  key: FLAG_SERVICE_PORT
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: flag-service-secrets
+                  key: FLAG_SERVICE_AUTH_SERVICE_URL
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
