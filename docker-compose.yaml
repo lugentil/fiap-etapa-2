@@ -17,7 +17,7 @@ services:
       POSTGRES_PASSWORD: ${AUTH_SERVICE_POSTGRES_PASSWORD}
 
   auth_service:
-    image: auth-service:3.0
+    image: auth-server:1.0
     restart: always
     ports: 
       - 8001:8001
@@ -48,7 +48,7 @@ services:
       POSTGRES_PASSWORD: ${FLAG_SERVICE_POSTGRES_PASSWORD}
 
   flags_service:
-    image: flags_db:1
+    image: flag-service:2.0
     restart: always
     ports: 
       - 8002:8002
@@ -118,15 +118,27 @@ services:
       SERVICE_API_KEY: ${EVALUATION_SERVICE_SERVICE_API_KEY}
       AWS_SQS_URL: ${EVALUATION_SERVICE_AWS_SQS_URL}
       AWS_REGION: ${AWS_REGION}
-      # AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      # AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      # AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
     depends_on:
       db_redis:
         condition: service_started
 
+  dynamodb-local:
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - "/home/lgentil/fiap-etapa-2/dynamodb/data:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
+    networks:
+      - database
+
   analytics_service:
-    image: analytics-service:2.0
+    image: analytics-service:3.0
     restart: always
     ports: 
       - 8005:8005
@@ -141,8 +153,9 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      DYNAMODB_ENDPOINT: ${ANALYTICS_AWS_DYNAMODB_URL}
     depends_on:
-      db_targeting-service:
+      dynamodb-local:
         condition: service_started
 
 volumes:

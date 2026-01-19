@@ -1,0 +1,1 @@
+contador=1; while [ $contador -lt 100 ]; do curl "http://a9e5a11226a1144e2870871a2337279a-92aca91b6208f62f.elb.us-east-1.amazonaws.com/evaluation-service/evaluate?user_id=$contador&flag_name=enable-new-dashboard"; let contador=contador+1; done;
